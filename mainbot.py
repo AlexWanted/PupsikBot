@@ -22,7 +22,7 @@ def handle_start(message):
 
 @bot.message_handler(commands=["stop"])
 def handle_start(message):
-    hide_markup = telebot.types.ReplyKeyboardHide
+    hide_markup = telebot.types.ReplyKeyboardRemove()
     bot.send_message(message.chat.id, 'Дотвидания(9(', reply_markup=hide_markup)
 
 
