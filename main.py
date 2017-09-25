@@ -10,6 +10,7 @@ import string
 def load_json(filetoopen):
     with open(filetoopen, 'r', encoding='utf-8') as f:
         jsonfile = json.load(f)
+    print('Opened {0}'.format(filetoopen))
     return jsonfile
 
 """
