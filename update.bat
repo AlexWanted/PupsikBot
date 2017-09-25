@@ -1,4 +1,5 @@
 @echo off
+heroku maintenance:on
 git init
 git add .
 git commit -m 'Changes'
