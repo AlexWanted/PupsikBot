@@ -4,12 +4,17 @@ import json
 import datetime
 from telebot import types
 from telegramcalendar import create_calendar
-import string
+import os
+from flask import app
+
+port = int(os.environ.get("PORT", 5000))
+app.run(debug=True, host='0.0.0.0', port=port)
 
 # Ипорт json файла расписания
 def load_json(filetoopen):
     with open(filetoopen, 'r', encoding='utf-8') as f:
         jsonfile = json.load(f)
+    print('Opened {0}'.format(filetoopen))
     return jsonfile
 
 """
