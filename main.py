@@ -142,23 +142,25 @@ def handle_text(message):
             try:
                 answer = show_schedule_by_date(
                     datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month,
-                                      datetime.datetime.now().day + 1, 0, 0, 0))
+                                      datetime.datetime.now().day + 1, 0+3, 0, 0))
             except ValueError:
                 if datetime.now().day == 31 and datetime.date().month == 12:
                     answer = show_schedule_by_date(
                         datetime.datetime(datetime.datetime.now().year+1, 1,
-                                          1, 0, 0, 0))
+                                          1, 0+3, 0, 0))
                 else:
                     answer = show_schedule_by_date(
                         datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month + 1,
-                                          1, 0, 0, 0))
+                                          1, 0+3, 0, 0))
             bot.send_message(message.chat.id, answer)
             log(message, answer)
             bot.send_message(message.chat.id, 'Чем ещё помочь?', reply_markup=userMarkup)
 
         #Показать расписание на сегодня
         if message.text == 'Расписание на сегодня':
-            answer = show_schedule_by_date(datetime.datetime.now())
+            now = datetime.datetime.now()
+            answer = show_schedule_by_date(datetime.datetime(now.year, now.month,
+                                                             now.day, 0, 0, 0))
             bot.send_message(message.chat.id, answer)
             log(message, answer)
             bot.send_message(message.chat.id, 'Чем ещё помочь?', reply_markup=userMarkup)
@@ -229,16 +231,16 @@ def handle_text(message):
             try:
                 answer = show_schedule_by_date(
                     datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month,
-                                      datetime.datetime.now().day + 1, 0, 0, 0))
+                                      datetime.datetime.now().day + 1, 0+3, 0, 0))
             except ValueError:
                 if datetime.now().day == 31 and datetime.date().month == 12:
                     answer = show_schedule_by_date(
                         datetime.datetime(datetime.datetime.now().year+1, 1,
-                                          1, 0, 0, 0))
+                                          1, 0+3, 0, 0))
                 else:
                     answer = show_schedule_by_date(
                         datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month + 1,
-                                          1, 0, 0, 0))
+                                          1, 0+3, 0, 0))
             bot.send_message(message.chat.id, answer)
         if message.text == '!Расписание' and message.from_user.id in get_admin_ids(bot, message.chat.id):
             answer = show_schedule_by_date(datetime.datetime.now())
@@ -249,22 +251,22 @@ def start_group():
     global groupChatON
     isSended = False
     now = datetime.datetime.now()
-    
+
     while groupChatON:
-        if (now.hour == 7) and (now.minute == 0) and (now.second == 0) and not isSended:
+        if (now.hour == 4) and (now.minute == 0) and (now.second == 0) and not isSended:
             answer = show_schedule_by_date(datetime.datetime.now())
             bot.send_message(groupChatID, answer)
             isSended = True
-        if (now.hour == 7) and (now.minute == 0) and (now.second == 2) and isSended:
+        if (now.hour == 4) and (now.minute == 0) and (now.second == 2) and isSended:
             isSended = False
-        if ((now.hour == 18) or (now.hour == 23)) and (now.minute == 0) and (now.second == 0) and not isSended:
+        if ((now.hour == 15) or (now.hour == 20)) and (now.minute == 0) and (now.second == 0) and not isSended:
             try:
-                answer = show_schedule_by_date(datetime.datetime(now.year, now.month, now.day + 1, 0, 0, 0))
+                answer = show_schedule_by_date(datetime.datetime(now.year, now.month, now.day + 1, 0+3, 0, 0))
             except ValueError:
                 if now.day == 31 and now.month == 12:
-                    answer = show_schedule_by_date(datetime.datetime(now.year + 1, 1, 1, 0, 0, 0))
+                    answer = show_schedule_by_date(datetime.datetime(now.year + 1, 1, 1, 0+3, 0, 0))
                 else:
-                    answer = show_schedule_by_date( datetime.datetime(now.year, now.month + 1, 1, 0, 0, 0))
+                    answer = show_schedule_by_date( datetime.datetime(now.year, now.month + 1, 1, 0+3, 0, 0))
             bot.send_message(groupChatID, answer)
 
 #Функция вызова календаря
@@ -286,7 +288,7 @@ def get_day(call):
 
     if savedDate is not None:
         day = call.data[13:]
-        date = datetime.datetime(int(savedDate[0]),int(savedDate[1]),int(day),0,0,0)
+        date = datetime.datetime(int(savedDate[0]),int(savedDate[1]),int(day),0+3,0,0)
         if not isGettingChanges:
             if date.month >= 9 or (date.month <= 6 and not date.year  <= 2017):
                 bot.send_message(chatID, show_schedule_by_date(date))
