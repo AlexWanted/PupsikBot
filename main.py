@@ -17,7 +17,7 @@ def dump_json(datatowrite, filetoopen):
         json.dump(datatowrite, f)
 
 """
-Объявление переменных и объектов
+Объявление переменных и объектовdatetime
 """
 c = Constants  #Файл констант
 bot = telebot.TeleBot(c.token)  #Объект бота
@@ -135,22 +135,22 @@ def handle_text(message):
 
     if message.chat.id == message.from_user.id:
         #Показать расписание на следующий день
-
+        now = datetime.datetime.now()
         if message.text == 'Клавиатура':
             bot.send_message(message.chat.id, 'Чем могу помочь?', reply_markup=userMarkup)
         if message.text == 'Расписание на завтра':
             try:
                 answer = show_schedule_by_date(
-                    datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month,
-                                      datetime.datetime.now().day + 1, 0, 0, 0))
+                    datetime.datetime(now.year, now.month,
+                                      now.day + 1, 0, 0, 0))
             except ValueError:
-                if datetime.now().day == 31 and datetime.date().month == 12:
+                if now.day == 31 and now.month == 12:
                     answer = show_schedule_by_date(
-                        datetime.datetime(datetime.datetime.now().year+1, 1,
+                        datetime.datetime(now.year+1, 1,
                                           1, 0, 0, 0))
                 else:
                     answer = show_schedule_by_date(
-                        datetime.datetime(datetime.datetime.now().year, datetime.datetime.now().month + 1,
+                        datetime.datetime(now.year, now.month + 1,
                                           1, 0, 0, 0))
             bot.send_message(message.chat.id, answer)
             log(message, answer)
