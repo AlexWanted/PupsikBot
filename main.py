@@ -39,7 +39,7 @@ changesText = ''  #Хранение сообщения с изменениями
 Главная страница кастомной клавиатуры
 """
 userMarkup = telebot.types.ReplyKeyboardMarkup(True, False)
-userMarkup.row('Расписание', 'Информация')
+userMarkup.row('Расписание', 'Расписание звонков')
 userMarkup.row('Календарь', 'Чётность недели')
 userMarkup.row('Расписание на завтра')
 userMarkup.row('Расписание на сегодня')
@@ -88,10 +88,10 @@ def show_schedule_by_date(date):
 
 
 #Возврат словаря с изменениями
-def changes_text(var1, var2, var3, var4, var5):
+def changes_text(var1, var2, var3, var4, var5, var6):
     return [{'1': var1, '2': var2,
              '3': var3, '4': var4,
-             '5': var5}]
+             '5': var5, '6': var6}]
 
 
 # Функция ведения лога
@@ -159,6 +159,12 @@ def handle_text(message):
         #Показать расписание на сегодня
         if message.text == 'Расписание на сегодня':
             answer = show_schedule_by_date(datetime.datetime.now())
+            bot.send_message(message.chat.id, answer)
+            log(message, answer)
+            bot.send_message(message.chat.id, 'Чем ещё помочь?', reply_markup=userMarkup)
+
+        if message.text == 'Расписание звонков':
+            answer = '1 пара: 8.30-10.00\n2 пара: 10.10-11.40\n3 пара: 11.50-13.40\n4 пара: 13.50-15.20\n5 пара: 15.30-17.00'
             bot.send_message(message.chat.id, answer)
             log(message, answer)
             bot.send_message(message.chat.id, 'Чем ещё помочь?', reply_markup=userMarkup)
@@ -300,7 +306,8 @@ def get_day(call):
                                                                                                 changesText[2],
                                                                                                 changesText[3],
                                                                                                 changesText[4],
-                                                                                                changesText[5])
+                                                                                                changesText[5],
+                                                                                                changesText[6])
                 dump_json(changesList, c.changesFile)
                 bot.send_message(chatID, 'Успешно')
                 isGettingChanges = False
@@ -308,7 +315,7 @@ def get_day(call):
             except IndexError:
                 changesList["{0}{1}{2}".format(date.day, date.month, date.year)] = changes_text('-', '-',
                                                                                                 '-', '-',
-                                                                                                '-')
+                                                                                                '-', '-')
                 dump_json(changesList, c.changesFile)
                 bot.send_message(chatID, 'Успешно')
                 isGettingChanges = False
