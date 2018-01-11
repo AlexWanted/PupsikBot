@@ -71,11 +71,11 @@ print(bot.get_me())  #Вывод Log информации о боте
 
 #Функция вывода расписания
 def show_schedule(first, second, var1, var2, date):
-    return "Расписание на {0}, {1}, {8}: \n1. {2} \n2. {3} \n3. {4} \n4. {5} \n5. {6} \n6. {7}".format(
-            c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month),
-            var2[first][second]["1"], var2[first][second]["2"],
-            var2[first][second]["3"], var2[first][second]["4"],
-            var2[first][second]["5"], var2[first][second]["6"], var1)
+    schedule = "Расписание на {0}, {1}, {2}: ".format(
+            c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month), var1)
+    for i in range(1, 7):
+        schedule.append("\n{1}. {2} ".format(i, var2[first][second][str(i)]))
+    return schedule
 
 #Функция вывода расписания по дате
 def show_schedule_by_date(date):
