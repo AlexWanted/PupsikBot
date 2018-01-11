@@ -190,13 +190,14 @@ def handle_text(message):
 
         #Вывод расписания на выбранный день недели
         if any([message.text == i for i in c.weekdayList]):
-            answer = "Расписание на {0}, {6}: \n1. {1} \n2. {2} \n3. {3} \n4. {4} \n5. {5}".format(
+            answer = "Расписание на {0}, {6}: \n1. {1} \n2. {2} \n3. {3} \n4. {4} \n5. {5} \n6. {6}".format(
                 message.text,
                 schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["1"],
                 schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["2"],
                 schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["3"],
                 schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["4"],
                 schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["5"],
+                schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["6"],
                 c.evenList[markupEven])
             bot.send_message(message.chat.id, answer)
             log(message, answer)
