@@ -3,6 +3,7 @@ import Constants
 import json
 import datetime
 from telegramcalendar import create_calendar
+from firebase import firebase
 
 # Ипорт json файла расписания
 def load_json(filetoopen):
@@ -17,11 +18,13 @@ def dump_json(datatowrite, filetoopen):
         json.dump(datatowrite, f)
 
 """
-Объявление переменных и объектовdatetime
+Объявление переменных и объектов datetime
 """
+db = firebase.FirebaseApplication('https://pupsikbot.firebaseio.com/')
 c = Constants  #Файл констант
 bot = telebot.TeleBot(c.token)  #Объект бота
-schedule = load_json(c.scheduleFile)  #Json файл расписания
+#schedule = load_json(c.scheduleFile)  #Json файл расписания
+schedule = db.get('Расписание', None)
 currentShownDates = {}  #Показываемые в данный момент даты
 firstDay = datetime.datetime(datetime.datetime.now().year, 9, 1, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
 groupChatID = 0 #ИД группового чата
@@ -30,7 +33,8 @@ groupChatON = False
 """
 Изменения в расписании
 """
-changes = load_json(c.changesFile) #Json файл изменений
+#changes = load_json(c.changesFile) #Json файл изменений
+changes = db.get('Изменения', None)
 changesList = {}  #Словарь временного хранения введённого изменения
 isGettingChanges = False  #Настраиваются ли изменения в данный момент
 changesText = ''  #Хранение сообщения с изменениями
@@ -71,11 +75,15 @@ print(bot.get_me())  #Вывод Log информации о боте
 
 #Функция вывода расписания
 def show_schedule(first, second, var1, var2, date):
-    return "Расписание на {0}, {1}, {8}: \n1. {2} \n2. {3} \n3. {4} \n4. {5} \n5. {6} \n6. {7}".format(
-            c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month),
-            var2[first][second]["1"], var2[first][second]["2"],
-            var2[first][second]["3"], var2[first][second]["4"],
-            var2[first][second]["5"], var2[first][second]["6"], var1)
+    scheduleStr = "Расписание на {0}, {1}, {2}: ".format(c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month), var1)
+    for i in range(1, len(var2[first][second])):
+        scheduleStr += "\n"+i+". "+var2[first][second][i]
+    return scheduleStr
+        #"Расписание на {0}, {1}, {8}: \n1. {2} \n2. {3} \n3. {4} \n4. {5} \n5. {6} \n6. {7}".format(
+           # c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month),
+           # var2[first][second]["1"], var2[first][second]["2"],
+            #var2[first][second]["3"], var2[first][second]["4"],
+           #var2[first][second]["5"], var2[first][second]["6"], var1)
 
 #Функция вывода расписания по дате
 def show_schedule_by_date(date):
