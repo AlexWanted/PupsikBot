@@ -1,21 +1,8 @@
 import telebot
 import Constants
-import json
 import datetime
 from telegramcalendar import create_calendar
 from firebase import firebase
-
-# Ипорт json файла расписания
-def load_json(filetoopen):
-    with open(filetoopen, 'r', encoding='utf-8') as f:
-        jsonfile = json.load(f)
-    print('Opened {0}'.format(filetoopen))
-    return jsonfile
-
-#Внести данные в json файл
-def dump_json(datatowrite, filetoopen):
-    with open(filetoopen, 'w', encoding='utf-8') as f:
-        json.dump(datatowrite, f)
 
 """
 Объявление переменных и объектов datetime
@@ -23,8 +10,6 @@ def dump_json(datatowrite, filetoopen):
 db = firebase.FirebaseApplication('https://pupsikbot.firebaseio.com/')
 c = Constants  #Файл констант
 bot = telebot.TeleBot(c.token)  #Объект бота
-#schedule = load_json(c.scheduleFile)  #Json файл расписания
-schedule = db.get('Расписание', None)
 currentShownDates = {}  #Показываемые в данный момент даты
 firstDay = datetime.datetime(datetime.datetime.now().year, 9, 1, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
 groupChatID = 0 #ИД группового чата
@@ -33,7 +18,6 @@ groupChatON = False
 """
 Изменения в расписании
 """
-#changes = load_json(c.changesFile) #Json файл изменений
 changes = db.get('Изменения', None)
 changesList = {}  #Словарь временного хранения введённого изменения
 isGettingChanges = False  #Настраиваются ли изменения в данный момент
@@ -72,26 +56,30 @@ def check_even(date):
 
 print(bot.get_me())  #Вывод Log информации о боте
 
-
 #Функция вывода расписания
 def show_schedule(first, second, var1, var2, date):
     scheduleStr = "Расписание на {0}, {1}, {2}: ".format(c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month), var1)
     for i in range(1, len(var2[first][second])):
-        scheduleStr += "\n"+i+". "+var2[first][second][i]
+        scheduleStr += "\n"+str(i)+". "+str(var2[first][second][i])
     return scheduleStr
-        #"Расписание на {0}, {1}, {8}: \n1. {2} \n2. {3} \n3. {4} \n4. {5} \n5. {6} \n6. {7}".format(
-           # c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month),
-           # var2[first][second]["1"], var2[first][second]["2"],
-            #var2[first][second]["3"], var2[first][second]["4"],
-           #var2[first][second]["5"], var2[first][second]["6"], var1)
+
+#Функция вывода расписания
+def show_changes(var1, var2, date):
+    scheduleStr = "Расписание на {0}, {1}, {2}: ".format(c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month), var1)
+    for i in range(1, len(var2)):
+        scheduleStr += "\n"+str(i)+". "+str(var2[i])
+    return scheduleStr
 
 #Функция вывода расписания по дате
 def show_schedule_by_date(date):
     evenStr = check_even(date)
+    schedule = db.get('Расписание', None)
+    changes = db.get("Изменения/", None)
     if "{0}{1}{2}".format(date.day, date.month, date.year) in changes:
-        return show_schedule("{0}{1}{2}".format(date.day, date.month, date.year), 0, evenStr, changes, date)
+        changes = db.get("Изменения/", "{0}{1}{2}".format(date.day, date.month, date.year))
+        return show_changes(evenStr, changes, date)
     else:
-        return show_schedule(evenStr, date.weekday(), evenStr, schedule, date)
+        return show_schedule(evenStr, c.weekdayList[date.weekday()], evenStr, schedule, date)
 
 
 #Возврат словаря с изменениями
@@ -197,22 +185,17 @@ def handle_text(message):
 
         #Вывод расписания на выбранный день недели
         if any([message.text == i for i in c.weekdayList]):
-            answer = "Расписание на {0}, {7}: \n1. {1} \n2. {2} \n3. {3} \n4. {4} \n5. {5} \n6. {6}".format(
-                message.text,
-                schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["1"],
-                schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["2"],
-                schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["3"],
-                schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["4"],
-                schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["5"],
-                schedule[c.evenList[markupEven]][c.weekdayList.index(message.text)]["6"],
-                c.evenList[markupEven])
+            answer = "Расписание на {0}, {1}: ".format(message.text, c.evenList[markupEven])
+            schedule = db.get("Расписание", None)
+            for i in range(1, len(schedule[c.evenList[markupEven]][message.text])):
+                answer += "\n" + str(i) + ". " + str(schedule[c.evenList[markupEven]][message.text][i])
             bot.send_message(message.chat.id, answer)
             log(message, answer)
             bot.send_message(message.chat.id, 'Чем ещё помочь?', reply_markup=userMarkup)
 
         #Показать календарь
         if message.text == 'Календарь':
-            changes = load_json(c.changesFile)
+            changes = db.get('Изменения', None)
             show_calendar(message)
 
         #Вывести чётность текущей недели
@@ -224,7 +207,7 @@ def handle_text(message):
 
         #Внести изменения в расписание
         if "!ИЗМЕНЕНИЯ" in message.text and (message.from_user.id == 246495886 or message.from_user.id == 110455487):
-            changes = load_json(c.changesFile)
+            changes = db.get('Изменения', None)
             changesList = changes
             isGettingChanges = True
             changesText = message.text.splitlines()
@@ -310,21 +293,19 @@ def get_day(call):
                 bot.answer_callback_query(call.id, text="")
         else:
             try:
-                changesList["{0}{1}{2}".format(date.day, date.month, date.year)] = changes_text(changesText[1],
-                                                                                                changesText[2],
-                                                                                                changesText[3],
-                                                                                                changesText[4],
-                                                                                                changesText[5],
-                                                                                                changesText[6])
-                dump_json(changesList, c.changesFile)
+                print(len(changesText))
+                changesDict = {}
+                for i in range(1, len(changesText)):
+                    changesDict[i] = changesText[i]
+                db.put('Изменения', "{0}{1}{2}".format(date.day, date.month, date.year), changesDict)
                 bot.send_message(chatID, 'Успешно')
                 isGettingChanges = False
                 bot.answer_callback_query(call.id, text="")
             except IndexError:
-                changesList["{0}{1}{2}".format(date.day, date.month, date.year)] = changes_text('-', '-',
-                                                                                                '-', '-',
-                                                                                                '-', '-')
-                dump_json(changesList, c.changesFile)
+                changesDict = {}
+                for i in range(1, 5):
+                    changesDict[i] = "-"
+                db.put('Изменения', "{0}{1}{2}".format(date.day, date.month, date.year), changesDict)
                 bot.send_message(chatID, 'Успешно')
                 isGettingChanges = False
                 bot.answer_callback_query(call.id, text="")
