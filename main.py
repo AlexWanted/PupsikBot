@@ -11,7 +11,7 @@ db = firebase.FirebaseApplication('https://pupsikbot.firebaseio.com/')
 c = Constants  #Файл констант
 bot = telebot.TeleBot(c.token)  #Объект бота
 currentShownDates = {}  #Показываемые в данный момент даты
-firstDay = datetime.datetime(datetime.datetime.now().year, 9, 1, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
+firstDay = datetime.datetime(datetime.datetime.now().year-1, 9, 1, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
 groupChatID = 0 #ИД группового чата
 groupChatON = False
 
@@ -31,6 +31,8 @@ userMarkup.row('Расписание', 'Расписание звонков')
 userMarkup.row('Календарь', 'Чётность недели')
 userMarkup.row('Расписание на завтра')
 userMarkup.row('Расписание на сегодня')
+
+print(bot.get_me())  #Вывод Log информации о боте
 
 """
 Чётность недели
@@ -54,8 +56,6 @@ def check_even(date):
         else:
             return c.evenList[1]
 
-print(bot.get_me())  #Вывод Log информации о боте
-
 #Функция вывода расписания
 def show_schedule(first, second, var1, var2, date):
     scheduleStr = "Расписание на {0}, {1}, {2}: ".format(c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month), var1)
@@ -64,7 +64,7 @@ def show_schedule(first, second, var1, var2, date):
     return scheduleStr
 
 #Функция вывода расписания
-def show_changes(var1, var2, date):
+def show_schedule(var1, var2, date):
     scheduleStr = "Расписание на {0}, {1}, {2}: ".format(c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month), var1)
     for i in range(1, len(var2)):
         scheduleStr += "\n"+str(i)+". "+str(var2[i])
@@ -77,17 +77,9 @@ def show_schedule_by_date(date):
     changes = db.get("Изменения/", None)
     if "{0}{1}{2}".format(date.day, date.month, date.year) in changes:
         changes = db.get("Изменения/", "{0}{1}{2}".format(date.day, date.month, date.year))
-        return show_changes(evenStr, changes, date)
+        return show_schedule(evenStr, changes, date)
     else:
         return show_schedule(evenStr, c.weekdayList[date.weekday()], evenStr, schedule, date)
-
-
-#Возврат словаря с изменениями
-def changes_text(var1, var2, var3, var4, var5, var6):
-    return [{'1': var1, '2': var2,
-             '3': var3, '4': var4,
-             '5': var5, '6': var6}]
-
 
 # Функция ведения лога
 def log(message, answer):
@@ -99,23 +91,13 @@ def log(message, answer):
     print(answer)
     print("\n~~~~~~~")
 
-
 # Команда "/start"
 @bot.message_handler(commands=["start"])
 def handle_start(message):
     bot.send_message(message.chat.id, 'Дратути)0', reply_markup=userMarkup)
 
-"""
-# Команда "/stop"
-@bot.message_handler(commands=["stop"])
-def handle_start(message):
-    hide_markup = telebot.types.ReplyKeyboardRemove()
-    bot.send_message(message.chat.id, 'Дотвидания(9(', reply_markup=hide_markup)
-"""
-
 def get_admin_ids(bot, chat_id):
     return [admin.user.id for admin in bot.get_chat_administrators(chat_id)]
-
 
 # Обработка текстовых сообщений
 @bot.message_handler(content_types=["text"])
@@ -129,10 +111,11 @@ def handle_text(message):
     global groupChatON
 
     if message.chat.id == message.from_user.id:
-        #Показать расписание на следующий день
         now = datetime.datetime.now()
         if message.text == 'Клавиатура':
             bot.send_message(message.chat.id, 'Чем могу помочь?', reply_markup=userMarkup)
+
+        #Показать расписание на следующий день
         if message.text == 'Расписание на завтра':
             try:
                 answer = show_schedule_by_date(
@@ -158,8 +141,10 @@ def handle_text(message):
             log(message, answer)
             bot.send_message(message.chat.id, 'Чем ещё помочь?', reply_markup=userMarkup)
 
+        #Показать расписание звонков
         if message.text == 'Расписание звонков':
-            answer = '1 пара: 8.30-10.00\n2 пара: 10.10-11.40\n3 пара: 11.50-13.40\n4 пара: 13.50-15.20\n5 пара: 15.30-17.00'
+            for i in range(1,6):
+                answer += "{0} пара: {1}".format(i, c.scheduleTime[i])
             bot.send_message(message.chat.id, answer)
             log(message, answer)
             bot.send_message(message.chat.id, 'Чем ещё помочь?', reply_markup=userMarkup)
