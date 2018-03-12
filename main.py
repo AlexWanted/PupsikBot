@@ -11,7 +11,7 @@ db = firebase.FirebaseApplication('https://pupsikbot.firebaseio.com/')
 c = Constants  #Файл констант
 bot = telebot.TeleBot(c.token)  #Объект бота
 currentShownDates = {}  #Показываемые в данный момент даты
-firstDay = datetime.datetime(datetime.datetime.now().year, 1, 12, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
+firstDay = datetime.datetime(datetime.datetime.now().year, 1, 5, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
 groupChatID = 0 #ИД группового чата
 groupChatON = False
 
