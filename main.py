@@ -11,7 +11,7 @@ db = firebase.FirebaseApplication('https://pupsikbot.firebaseio.com/')
 c = Constants  #Файл констант
 bot = telebot.TeleBot(c.token)  #Объект бота
 currentShownDates = {}  #Показываемые в данный момент даты
-firstDay = datetime.datetime(datetime.datetime.now().year, 9, 1, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
+firstDay = datetime.datetime(datetime.datetime.now().year-1, 9, 1, 0, 0, 0).timetuple().tm_yday  #Первый день учёбы
 groupChatID = 0 #ИД группового чата
 groupChatON = False
 
@@ -64,7 +64,7 @@ def show_schedule(first, second, var1, var2, date):
     return scheduleStr
 
 #Функция вывода расписания
-def show_schedule(var1, var2, date):
+def show_changes(var1, var2, date):
     scheduleStr = "Расписание на {0}, {1}, {2}: ".format(c.weekdayList[date.weekday()], "{0}.{1}".format(date.day, date.month), var1)
     for i in range(1, len(var2)):
         scheduleStr += "\n"+str(i)+". "+str(var2[i])
@@ -77,7 +77,7 @@ def show_schedule_by_date(date):
     changes = db.get("Изменения/", None)
     if "{0}{1}{2}".format(date.day, date.month, date.year) in changes:
         changes = db.get("Изменения/", "{0}{1}{2}".format(date.day, date.month, date.year))
-        return show_schedule(evenStr, changes, date)
+        return show_changes(evenStr, changes, date)
     else:
         return show_schedule(evenStr, c.weekdayList[date.weekday()], evenStr, schedule, date)
 
